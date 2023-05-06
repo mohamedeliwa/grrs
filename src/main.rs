@@ -17,12 +17,22 @@ fn main() {
     // the arguments that this program was started with (normally passed via the command line).
     // return an iterator
     let args = Cli::parse();
-    
-    let content = std::fs::read_to_string(&args.path).expect("could not read file");
-
-    for line in content.lines() {
-        if line.contains(&args.pattern) {
-            println!("{}", line);
-        }
+    let file = fs::File::open(&args.path).expect("couldn't open file");
+    let mut reader = io::BufReader::new(file);
+    loop {
+        let mut line = String::new();
+        match reader.read_line(&mut line) {
+            Ok(length) => {
+                if length == 0 {
+                    break;
+                }
+                if line.contains(&args.pattern) {
+                    println!("{line}");
+                }
+            }
+            Err(_) => {
+                panic!("Couldn't read file")
+            }
+        };
     }
 }
